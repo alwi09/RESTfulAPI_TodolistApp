@@ -1,0 +1,13 @@
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /api/find_all_todolist    --> todolist_gin_gorm/internal/service.(*HandlerImpl).GetAllHandlerTodolist-fm (4 handlers)
+[GIN-debug] GET    /api/find_by_id_todolist/:todolistId --> todolist_gin_gorm/internal/service.(*HandlerImpl).GetIDHandlerTodolist-fm (4 handlers)
+[GIN-debug] POST   /api/create_todolist      --> todolist_gin_gorm/internal/service.(*HandlerImpl).CreateHandlerTodolist-fm (4 handlers)
+[GIN-debug] PUT    /api/update_todolist/:todolistId --> todolist_gin_gorm/internal/service.(*HandlerImpl).UpdateHandlerTodolist-fm (4 handlers)
+[GIN-debug] DELETE /api/delete_todolist/:todolistId --> todolist_gin_gorm/internal/service.(*HandlerImpl).DeleteHandlerTodolist-fm (4 handlers)
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :1234
+127.0.0.1 - [06 Mar 23 21:18 WIB] PUT /api/update_todolist/2 200 4.701125ms 
