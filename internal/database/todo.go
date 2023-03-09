@@ -44,11 +44,14 @@ func (repository *TodoRepository) GetID(todoID int64) (*entity.Todos, error) {
 	return &todos, result.Error
 }
 
-func (repository *TodoRepository) Update(todoID int64, updates map[string]interface{}) (int64, error) {
+func (repository *TodoRepository) Update(todoID int64, updates map[string]interface{}) (*entity.Todos, error) {
 	var todos entity.Todos
 	result := repository.DB.Model(&todos).Where("id = ?", todoID).Updates(updates)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 
-	return result.RowsAffected, result.Error
+	return &todos, result.Error
 }
 
 func (repository *TodoRepository) Delete(todoID int64) (int64, error) {
