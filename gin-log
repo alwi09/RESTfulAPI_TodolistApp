@@ -10,4 +10,3 @@
 [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
 [GIN-debug] Listening and serving HTTP on :1234
-127.0.0.1 - [06 Mar 23 21:18 WIB] PUT /api/update_todolist/2 200 4.701125ms 
