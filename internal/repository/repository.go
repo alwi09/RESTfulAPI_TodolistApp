@@ -6,6 +6,6 @@ type Repository interface {
 	GetAll() ([]entity.Todos, error)
 	GetID(todoID int64) (*entity.Todos, error)
 	Create(title string, description string) (*entity.Todos, error)
-	Update(todoID int64, updates map[string]interface{}) (int64, error)
+	Update(todoID int64, updates map[string]interface{}) (*entity.Todos, error)
 	Delete(todoID int64) (int64, error)
 }
