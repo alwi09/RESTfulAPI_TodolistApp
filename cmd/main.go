@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
-	
+
 	"os"
 	"todolist_gin_gorm/cmd/router"
 	"todolist_gin_gorm/internal/config"
@@ -17,14 +17,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-
-func SetupLogOutput()  {
+func SetupLogOutput() {
 	file, _ := os.Create("gin-log")
 	gin.DefaultWriter = io.MultiWriter(file, os.Stdout)
 }
 
 func main() {
-	
+
 	SetupLogOutput()
 
 	ctx := context.Background()
