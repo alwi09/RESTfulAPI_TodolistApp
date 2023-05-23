@@ -1,0 +1,8 @@
+CREATE TABLE todos
+(
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    title VARCHAR(99) NOT NULL,
+    description VARCHAR(999) NOT NULL,
+    status TINYINT DEFAULT FALSE,
+    PRIMARY KEY (id)
+);
