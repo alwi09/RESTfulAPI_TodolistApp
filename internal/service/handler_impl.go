@@ -53,7 +53,6 @@ func (handler *HandlerImpl) CreateHandlerTodolist(ctx *gin.Context) {
 		Data:    newList,
 	})
 
-	return
 }
 
 func (handler *HandlerImpl) GetAllHandlerTodolist(ctx *gin.Context) {
@@ -62,7 +61,7 @@ func (handler *HandlerImpl) GetAllHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
 
 			Message: err.Error(),
-			Status: http.StatusInternalServerError,
+			Status:  http.StatusInternalServerError,
 		})
 		return
 	}
@@ -71,12 +70,11 @@ func (handler *HandlerImpl) GetAllHandlerTodolist(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, dto.TodolistResponseGetAll{
 
 		Message: "get all todolist successfully",
-		Status: http.StatusOK,
-		More: len(todos),
-		Data: todos,
+		Status:  http.StatusOK,
+		More:    len(todos),
+		Data:    todos,
 	})
 
-	return
 }
 
 func (handler *HandlerImpl) GetIDHandlerTodolist(ctx *gin.Context) {
@@ -87,7 +85,7 @@ func (handler *HandlerImpl) GetIDHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
 
 			Message: err.Error(),
-			Status: http.StatusBadRequest,
+			Status:  http.StatusBadRequest,
 		})
 		return
 	}
@@ -98,7 +96,7 @@ func (handler *HandlerImpl) GetIDHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
 
 			Message: err.Error(),
-			Status: http.StatusInternalServerError,
+			Status:  http.StatusInternalServerError,
 		})
 		return
 	}
@@ -108,20 +106,18 @@ func (handler *HandlerImpl) GetIDHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, dto.ErrorResponse{
 
 			Message: "todolist by id not found",
-			Status: http.StatusNotFound,
+			Status:  http.StatusNotFound,
 		})
 		return
 	}
 
 	logrus.Info(http.StatusOK, "get todolist by id successfully")
 	ctx.AbortWithStatusJSON(http.StatusOK, dto.TodolistResponseGetID{
-		
-		Message: "get todolist by id successfully",
-		Status: http.StatusOK,
-		Data: *todos,
-	})
 
-	return
+		Message: "get todolist by id successfully",
+		Status:  http.StatusOK,
+		Data:    *todos,
+	})
 
 }
 
@@ -133,7 +129,7 @@ func (handler *HandlerImpl) UpdateHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
 
 			Message: err.Error(),
-			Status: http.StatusBadRequest,
+			Status:  http.StatusBadRequest,
 		})
 		return
 	}
@@ -145,7 +141,7 @@ func (handler *HandlerImpl) UpdateHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
 
 			Message: err.Error(),
-			Status: http.StatusBadRequest,
+			Status:  http.StatusBadRequest,
 		})
 		return
 	}
@@ -156,7 +152,7 @@ func (handler *HandlerImpl) UpdateHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
 
 			Message: err.Error(),
-			Status: http.StatusInternalServerError,
+			Status:  http.StatusInternalServerError,
 		})
 		return
 	}
@@ -166,7 +162,7 @@ func (handler *HandlerImpl) UpdateHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, dto.ErrorResponse{
 
 			Message: "todolist by id not found",
-			Status: http.StatusNotFound,
+			Status:  http.StatusNotFound,
 		})
 		return
 	}
@@ -177,7 +173,7 @@ func (handler *HandlerImpl) UpdateHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
 
 			Message: err.Error(),
-			Status: http.StatusInternalServerError,
+			Status:  http.StatusInternalServerError,
 		})
 		return
 	}
@@ -186,7 +182,7 @@ func (handler *HandlerImpl) UpdateHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, dto.TodolistResponseGetID{
 
 			Message: "not change",
-			Status: http.StatusOK,
+			Status:  http.StatusOK,
 		})
 		return
 	}
@@ -195,10 +191,10 @@ func (handler *HandlerImpl) UpdateHandlerTodolist(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, dto.TodolistResponseUpdate{
 
 		Message: "update todolist successfully",
-		Status: http.StatusOK,
-		Data: todos,
+		Status:  http.StatusOK,
+		Data:    todos,
 	})
-	return
+
 }
 
 func (handler *HandlerImpl) DeleteHandlerTodolist(ctx *gin.Context) {
@@ -209,7 +205,7 @@ func (handler *HandlerImpl) DeleteHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
 
 			Message: err.Error(),
-			Status: http.StatusBadRequest,
+			Status:  http.StatusBadRequest,
 		})
 		return
 	}
@@ -220,7 +216,7 @@ func (handler *HandlerImpl) DeleteHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
 
 			Message: err.Error(),
-			Status: http.StatusInternalServerError,
+			Status:  http.StatusInternalServerError,
 		})
 		return
 	}
@@ -229,7 +225,7 @@ func (handler *HandlerImpl) DeleteHandlerTodolist(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, dto.ErrorResponse{
 
 			Message: "id not found",
-			Status: http.StatusNotFound,
+			Status:  http.StatusNotFound,
 		})
 		return
 	}
@@ -238,8 +234,7 @@ func (handler *HandlerImpl) DeleteHandlerTodolist(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, dto.TodolistResponseDelete{
 
 		Message: "delete todolist successfully",
-		Status: http.StatusOK,
+		Status:  http.StatusOK,
 	})
 
-	return
 }
