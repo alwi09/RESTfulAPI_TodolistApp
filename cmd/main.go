@@ -33,18 +33,31 @@ func main() {
 
 	var cfg config.Config
 
+	// initialize config
 	err := envconfig.Process("", &cfg)
 	if err != nil {
 		logrus.Fatal(errors.New("Error"), err)
 	}
 
+	// initialize db connect
 	db, err := mysql.Connect(ctx, &cfg)
 	if err != nil {
 		return
 	}
 
+	// initialize migration
+	err = mysql.Migrate(db)
+	if err != nil {
+		logrus.Fatalf("error running schema migration %v", err)
+	}
+
+	// initialize repositories
 	todolistRepository := database.NewTodoRepository(db)
+
+	// initialize service
 	todolistHandler := service.NewHandlerImpl(todolistRepository)
+
+	// initialize router
 	routeBuilder := router.NewRouteBuilder(todolistHandler)
 	routerInit := routeBuilder.RouteInit()
 
