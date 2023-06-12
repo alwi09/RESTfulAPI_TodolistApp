@@ -18,15 +18,26 @@ func NewRouteBuilder(todoHandler *service.HandlerImpl) *RouteBuilder {
 }
 
 func (routeBuilder *RouteBuilder) RouteInit() *gin.Engine {
-	router := gin.New()
+	// create Gin - Router
+	router := gin.Default()
 
-	router.Use(gin.Recovery(), middleware.Logger(), middleware.XAPIKEY())
+	// router.Use(gin.Recovery(), middleware.Logger(), middleware.XAPIKEY())
+	router.Use(gin.Recovery(), middleware.Logger())
 
-	router.GET("/api/find_all_todolist", routeBuilder.todoHandler.GetAllHandlerTodolist)
-	router.GET("/api/find_by_id_todolist/:todolistId", routeBuilder.todoHandler.GetIDHandlerTodolist)
-	router.POST("/api/create_todolist", routeBuilder.todoHandler.CreateHandlerTodolist)
-	router.PUT("/api/update_todolist/:todolistId", routeBuilder.todoHandler.UpdateHandlerTodolist)
-	router.DELETE("/api/delete_todolist/:todolistId", routeBuilder.todoHandler.DeleteHandlerTodolist)
+	// Group routes that require authentication
+	authGroup := router.Group("/api")
+	authGroup.Use(middleware.AuthMiddlewareJWT()) // Apply authentication middleware
+
+	// register routes
+	authGroup.GET("/find_all_todolist", routeBuilder.todoHandler.GetAllHandlerTodolist)
+	authGroup.GET("/find_by_id_todolist/:todolistId", routeBuilder.todoHandler.GetIDHandlerTodolist)
+	authGroup.POST("/create_todolist", routeBuilder.todoHandler.CreateHandlerTodolist)
+	authGroup.PUT("/update_todolist/:todolistId", routeBuilder.todoHandler.UpdateHandlerTodolist)
+	authGroup.DELETE("/delete_todolist/:todolistId", routeBuilder.todoHandler.DeleteHandlerTodolist)
+
+	// public routes
+	router.POST("/register", routeBuilder.todoHandler.RegisterHandler)
+	router.POST("/login", routeBuilder.todoHandler.LoginHandler)
 
 	return router
 }
