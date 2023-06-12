@@ -9,5 +9,5 @@ type Repository interface {
 	Update(todoID int64, updates map[string]interface{}) (*entity.Todos, error)
 	Delete(todoID int64) (int64, error)
 	CreateUser(user *entity.Users) error
-	FindUserByUsername(username string) (*entity.Users, error)
+	FindUserByEmail(username string) (*entity.Users, error)
 }
