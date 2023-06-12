@@ -31,3 +31,14 @@ type TodolistResponseUpdate struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
+
+type CreateUserResponse struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+}
+
+type UserLoginResponse struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+	Token   string `json:"token"`
+}
