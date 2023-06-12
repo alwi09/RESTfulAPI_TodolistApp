@@ -1,12 +1,25 @@
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
 [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
  - using env:	export GIN_MODE=release
  - using code:	gin.SetMode(gin.ReleaseMode)
 
-[GIN-debug] GET    /api/find_all_todolist    --> todolist_gin_gorm/internal/service.(*HandlerImpl).GetAllHandlerTodolist-fm (4 handlers)
-[GIN-debug] GET    /api/find_by_id_todolist/:todolistId --> todolist_gin_gorm/internal/service.(*HandlerImpl).GetIDHandlerTodolist-fm (4 handlers)
-[GIN-debug] POST   /api/create_todolist      --> todolist_gin_gorm/internal/service.(*HandlerImpl).CreateHandlerTodolist-fm (4 handlers)
-[GIN-debug] PUT    /api/update_todolist/:todolistId --> todolist_gin_gorm/internal/service.(*HandlerImpl).UpdateHandlerTodolist-fm (4 handlers)
-[GIN-debug] DELETE /api/delete_todolist/:todolistId --> todolist_gin_gorm/internal/service.(*HandlerImpl).DeleteHandlerTodolist-fm (4 handlers)
+[GIN-debug] GET    /api/find_all_todolist    --> todolist_gin_gorm/internal/service.(*HandlerImpl).GetAllHandlerTodolist-fm (6 handlers)
+[GIN-debug] GET    /api/find_by_id_todolist/:todolistId --> todolist_gin_gorm/internal/service.(*HandlerImpl).GetIDHandlerTodolist-fm (6 handlers)
+[GIN-debug] POST   /api/create_todolist      --> todolist_gin_gorm/internal/service.(*HandlerImpl).CreateHandlerTodolist-fm (6 handlers)
+[GIN-debug] PUT    /api/update_todolist/:todolistId --> todolist_gin_gorm/internal/service.(*HandlerImpl).UpdateHandlerTodolist-fm (6 handlers)
+[GIN-debug] DELETE /api/delete_todolist/:todolistId --> todolist_gin_gorm/internal/service.(*HandlerImpl).DeleteHandlerTodolist-fm (6 handlers)
+[GIN-debug] POST   /register                 --> todolist_gin_gorm/internal/service.(*HandlerImpl).RegisterHandler-fm (5 handlers)
+[GIN-debug] POST   /login                    --> todolist_gin_gorm/internal/service.(*HandlerImpl).LoginHandler-fm (5 handlers)
 [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
 [GIN-debug] Listening and serving HTTP on :1234
+127.0.0.1 - [12 Jun 23 20:24 WIB] PUT /api/update_todolist/1 200 9.076397ms 
+[GIN] 2023/06/12 - 20:24:39 | 200 |    9.115048ms |       127.0.0.1 | PUT      "/api/update_todolist/1"
+127.0.0.1 - [12 Jun 23 20:24 WIB] GET /api/find_by_id_todolist/1 200 515.332µs 
+[GIN] 2023/06/12 - 20:24:45 | 200 |     557.588µs |       127.0.0.1 | GET      "/api/find_by_id_todolist/1"
+[GIN-debug] redirecting request 301: /api/find_all_todolist --> /api/find_all_todolist
+127.0.0.1 - [12 Jun 23 20:24 WIB] GET /api/find_all_todolist 200 535.49µs 
+[GIN] 2023/06/12 - 20:24:56 | 200 |     576.125µs |       127.0.0.1 | GET      "/api/find_all_todolist"
+127.0.0.1 - [12 Jun 23 20:25 WIB] DELETE /api/delete_todolist/1 200 7.449214ms 
+[GIN] 2023/06/12 - 20:25:08 | 200 |    7.489284ms |       127.0.0.1 | DELETE   "/api/delete_todolist/1"
