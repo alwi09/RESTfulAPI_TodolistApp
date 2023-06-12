@@ -2,17 +2,17 @@ package middleware
 
 import (
 	"net/http"
-	"todolist_gin_gorm/internal/config"
 	"todolist_gin_gorm/internal/model/dto"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-// secret-ket untuk sign-in token
+// secret-key untuk sign-in token
 
 // request -> server
 
+// AuthMiddlewareJWT is a middleware function to check user authentication
 func AuthMiddlewareJWT() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// mengambil token dari Header Authorization
@@ -20,7 +20,7 @@ func AuthMiddlewareJWT() gin.HandlerFunc {
 
 		if authHeader == "" {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, dto.ErrorResponse{
-				Message: "unauthorized",
+				Message: "Authorization token not provided",
 				Status:  http.StatusUnauthorized,
 			})
 			return
@@ -29,10 +29,10 @@ func AuthMiddlewareJWT() gin.HandlerFunc {
 		// split token dari Header
 		tokenString := authHeader[len("Bearer "):]
 
-		// parsing token dengan secret-key
-		claims := &config.Claims{}
+		// Parsing token dengan menggunakan struct Claims
+		claims := &jwt.StandardClaims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return config.JWTSecretKey, nil
+			return []byte("secret-key"), nil // Ganti dengan kunci rahasia yang sesuai
 		})
 
 		if err != nil {
@@ -58,10 +58,10 @@ func AuthMiddlewareJWT() gin.HandlerFunc {
 			return
 		}
 
-		// jika token valid, mengambil username dari claim dan simpan ke dalam konteks
-		ctx.Set("username", claims.Username)
+		// jika token valid, mengambil email dari claim dan simpan ke dalam konteks
+		ctx.Set("email", claims.Subject)
 
-		// jika token valid, akan di lanjutkan ke handler
+		// jika token valid, akan dilanjutkan ke handler
 		ctx.Next()
 	}
 }

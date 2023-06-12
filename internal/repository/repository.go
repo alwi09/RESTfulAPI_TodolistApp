@@ -8,4 +8,6 @@ type Repository interface {
 	Create(title string, description string) (*entity.Todos, error)
 	Update(todoID int64, updates map[string]interface{}) (*entity.Todos, error)
 	Delete(todoID int64) (int64, error)
+	CreateUser(user *entity.Users) error
+	FindUserByEmail(username string) (*entity.Users, error)
 }
