@@ -2,13 +2,17 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"todolist_gin_gorm/internal/config"
 	"todolist_gin_gorm/internal/database"
 	"todolist_gin_gorm/internal/model/dto"
+	"todolist_gin_gorm/internal/model/entity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type HandlerImpl struct {
@@ -19,6 +23,139 @@ func NewHandlerImpl(repository *database.TodoRepository) *HandlerImpl {
 	return &HandlerImpl{
 		todolistRepository: repository,
 	}
+}
+
+// RegisterHandler handles the registration request
+func (handler *HandlerImpl) RegisterHandler(ctx *gin.Context) {
+	// Parse request body
+	var user entity.Users
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: "failed to create user",
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	// validate request register
+	err := dto.ValidateRegisterRequest(&user)
+	if err != nil {
+		logrus.Error(err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: err.Error(),
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	// Check if user already exists
+	existingUser, err := handler.todolistRepository.FindUserByEmail(user.Email)
+	if existingUser != nil {
+		logrus.Warn("user already exist", err.Error())
+		ctx.AbortWithStatusJSON(http.StatusConflict, dto.ErrorResponse{
+			Message: "user already exists",
+			Status:  http.StatusConflict,
+		})
+		return
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "an error occurred",
+			Status:  http.StatusInternalServerError,
+		})
+		return
+	}
+
+	// Create user
+	newUser := &entity.Users{
+		Username: user.Username,
+		Email:    user.Email,
+		Password: string(hashedPassword),
+	}
+	err = handler.todolistRepository.CreateUser(newUser)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "failed to create user",
+			Status:  http.StatusInternalServerError,
+		})
+		return
+	}
+
+	// Return success message
+	ctx.JSON(http.StatusOK, dto.CreateUserResponse{
+		Message: "user created successfully",
+		Status:  http.StatusOK,
+	})
+}
+
+// LoginHandler handles the login request
+func (handler *HandlerImpl) LoginHandler(ctx *gin.Context) {
+	// Parse request body
+	var user entity.Users
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: err.Error(),
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	// validate request login
+	err := dto.ValidateLoginRequest(&user)
+	if err != nil {
+		logrus.Error(err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
+			Message: err.Error(),
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	// Find user by Email
+	existingUser, err := handler.todolistRepository.FindUserByEmail(user.Email)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "an error occurred",
+			Status:  http.StatusInternalServerError,
+		})
+		return
+	}
+	if existingUser == nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, dto.ErrorResponse{
+			Message: "Invalid credentials",
+			Status:  http.StatusUnauthorized,
+		})
+		return
+	}
+
+	// Compare password
+	if err := bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(user.Password)); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, dto.ErrorResponse{
+			Message: "Invalid credentials",
+			Status:  http.StatusUnauthorized,
+		})
+		return
+	}
+
+	// Create JWT token
+	tokenString, err := config.CreateJWTToken(user.Email)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Message: "Failed to create token",
+			Status:  http.StatusInternalServerError,
+		})
+		return
+	}
+
+	// Return token in response
+	ctx.JSON(http.StatusOK, dto.UserLoginResponse{
+		Message: fmt.Sprintf("hello %s! you are now logged in", user.Username),
+		Status:  http.StatusOK,
+		Token:   tokenString,
+	})
 }
 
 func (handler *HandlerImpl) CreateHandlerTodolist(ctx *gin.Context) {
@@ -92,7 +229,7 @@ func (handler *HandlerImpl) GetIDHandlerTodolist(ctx *gin.Context) {
 
 	todos, err := handler.todolistRepository.GetID(todoID)
 	if err != nil {
-		logrus.Errorf("failed whe get todolist bi id: %v", err)
+		logrus.Errorf("failed when get todolist by id: %v", err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
 
 			Message: err.Error(),
