@@ -46,11 +46,6 @@ func Connect(ctx context.Context, cfg *config.Config) (*gorm.DB, error) {
 		panic("Cannot connect to database")
 	}
 
-	// err = db.AutoMigrate(&entity.Todos{})
-	// if err != nil {
-	// 	logrus.Error(err)
-	// }
-
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, err
