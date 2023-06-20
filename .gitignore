@@ -1,2 +1,23 @@
 *.idea
 *.env.sh
+
+# library
+*go.mod
+*go.sum
+
+# if running code
+*gin-log
+
+# configuration
+*internal/config/config.go
+
+# middleware not use
+*internal/middleware/basic_auth.go
+*internal/middleware/XAPIKEY.go
+
+# testing
+*internal/test/todolist_test.go
+
+# mock
+*mock/Handler.go
+*mock/Repository.go
