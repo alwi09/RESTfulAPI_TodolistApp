@@ -14,12 +14,11 @@
 [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
 [GIN-debug] Listening and serving HTTP on :1234
-127.0.0.1 - [12 Jun 23 20:24 WIB] PUT /api/update_todolist/1 200 9.076397ms 
-[GIN] 2023/06/12 - 20:24:39 | 200 |    9.115048ms |       127.0.0.1 | PUT      "/api/update_todolist/1"
-127.0.0.1 - [12 Jun 23 20:24 WIB] GET /api/find_by_id_todolist/1 200 515.332µs 
-[GIN] 2023/06/12 - 20:24:45 | 200 |     557.588µs |       127.0.0.1 | GET      "/api/find_by_id_todolist/1"
+127.0.0.1 - [20 Jun 23 10:14 WIB] POST /login 200 92.973155ms 
+[GIN] 2023/06/20 - 10:14:53 | 200 |   97.949657ms |       127.0.0.1 | POST     "/login"
 [GIN-debug] redirecting request 301: /api/find_all_todolist --> /api/find_all_todolist
-127.0.0.1 - [12 Jun 23 20:24 WIB] GET /api/find_all_todolist 200 535.49µs 
-[GIN] 2023/06/12 - 20:24:56 | 200 |     576.125µs |       127.0.0.1 | GET      "/api/find_all_todolist"
-127.0.0.1 - [12 Jun 23 20:25 WIB] DELETE /api/delete_todolist/1 200 7.449214ms 
-[GIN] 2023/06/12 - 20:25:08 | 200 |    7.489284ms |       127.0.0.1 | DELETE   "/api/delete_todolist/1"
+127.0.0.1 - [20 Jun 23 10:15 WIB] GET /api/find_all_todolist 400 116.79µs 
+[GIN] 2023/06/20 - 10:15:35 | 400 |     214.412µs |       127.0.0.1 | GET      "/api/find_all_todolist"
+[GIN-debug] redirecting request 301: /api/find_all_todolist --> /api/find_all_todolist
+127.0.0.1 - [20 Jun 23 10:15 WIB] GET /api/find_all_todolist 200 6.120339ms 
+[GIN] 2023/06/20 - 10:15:57 | 200 |    6.168684ms |       127.0.0.1 | GET      "/api/find_all_todolist"
