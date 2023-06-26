@@ -5,5 +5,7 @@ CREATE TABLE todos (
     status TINYINT DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- user_id BIGINT NOT NULL,
     PRIMARY KEY (todos_id)
+    -- FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
