@@ -11,23 +11,30 @@ services:
     ports:
       - "1234:1234"
     depends_on:
-      - mysql-mycontainer
+      mysql-mycontainer:
+        condition: service_healthy
     networks:
       - network-todolist
     links:
       - mysql-mycontainer
+
   mysql-mycontainer:
     container_name: mysql-mycontainer
     image: mysql:8.0.33
     ports:
       - "3300:3306"
     environment:
-      - MYSQL_USER=alwi09
-      - MYSQL_PASSWORD=alwiirfani091199
-      - MYSQL_ROOT_PASSWORD=alwiirfani091199
-      - MYSQL_DATABASE=todolist_restfulapi
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_USER: "alwi09"
+      MYSQL_PASSWORD: "alwiirfani091199"
+      MYSQL_DATABASE: "todolist_restfulapi"
     networks:
       - network-todolist
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
 
 networks:
   network-todolist:
