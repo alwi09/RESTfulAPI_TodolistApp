@@ -15,8 +15,6 @@ services:
         condition: service_healthy
     networks:
       - network-todolist
-    links:
-      - mysql-mycontainer
 
   mysql-mycontainer:
     container_name: mysql-mycontainer
@@ -31,7 +29,7 @@ services:
     networks:
       - network-todolist
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysql-mycontainer"]
       interval: 5s
       timeout: 10s
       retries: 10
