@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strconv"
 	"todolist_gin_gorm/internal/config"
-	"todolist_gin_gorm/internal/database"
 	"todolist_gin_gorm/internal/model/dto"
 	"todolist_gin_gorm/internal/model/entity"
+	"todolist_gin_gorm/internal/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -16,10 +16,10 @@ import (
 )
 
 type HandlerImpl struct {
-	todolistRepository *database.TodoRepository
+	todolistRepository repository.Repository
 }
 
-func NewHandlerImpl(repository *database.TodoRepository) *HandlerImpl {
+func NewHandlerImpl(repository repository.Repository) *HandlerImpl {
 	return &HandlerImpl{
 		todolistRepository: repository,
 	}
