@@ -3,6 +3,7 @@ package database
 import (
 	"errors"
 	"todolist_gin_gorm/internal/model/entity"
+	"todolist_gin_gorm/internal/repository"
 
 	"gorm.io/gorm"
 )
@@ -13,7 +14,7 @@ type TodoRepository struct {
 	DB *gorm.DB
 }
 
-func NewTodoRepository(DB *gorm.DB) *TodoRepository {
+func NewTodoRepository(DB *gorm.DB) repository.Repository {
 	return &TodoRepository{
 		DB: DB,
 	}
