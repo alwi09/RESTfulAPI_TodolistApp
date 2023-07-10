@@ -15,6 +15,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,6 +23,10 @@ func TestRunMock(t *testing.T) {
 	t.Run("TestGetAllTodolistsSuccess", TestGetAllTodolistsSuccess)
 	t.Run("TestGetAllTodolistsInternalServerError", TestGetAllTodolistsInternalServerError)
 	t.Run("TestGetAllTodolistsEmpty", TestGetAllTodolistsEmpty)
+	t.Run("TestCreateTodolistSuccess", TestCreateTodolistSuccess)
+	t.Run("TestCreateTodolistInvalidValidation", TestCreateTodolistInvalidValidation)
+	t.Run("TestCreateTodolistInternalServerError", TestCreateTodolistInternalServerError)
+	t.Run("TestUpdateTodolistSuccess", TestUpdateTodolistSuccess)
 }
 
 func TestGetAllTodolistsSuccess(t *testing.T) {
@@ -213,4 +218,43 @@ func TestCreateTodolistInternalServerError(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, ErrorResponse.Status)
 	assert.Equal(t, expectedErrors.Error(), ErrorResponse.Message)
+}
+
+func TestUpdateTodolistSuccess(t *testing.T) {
+	repoMock := mocks.NewRepository(t)
+
+	handler := NewHandlerImpl(repoMock)
+
+	reqBody := dto.UpdateTodolistRequest{
+		Title:       "new title",
+		Description: "new description",
+		Status:      false,
+	}
+	requestBodyBytes, _ := json.Marshal(reqBody)
+	// require.NoError(t, err)
+
+	expextedTodo := entity.Todos{
+		Id:          1,
+		Title:       "new title",
+		Description: "new description",
+		Status:      true,
+	}
+
+	repoMock.On("GetID", int64(1)).Return(&entity.Todos{}, nil)
+	repoMock.On("Update", int64(1), mock.Anything).Return(&expextedTodo, nil)
+
+	req, _ := http.NewRequest(http.MethodPut, "/update_todolist/1", bytes.NewBuffer(requestBodyBytes))
+	// require.NoError(t, err)
+	recorder := httptest.NewRecorder()
+
+	router := gin.Default()
+	router.PUT("/update_todolist/:todolistId", handler.UpdateHandlerTodolist)
+	router.ServeHTTP(recorder, req)
+
+	var result dto.TodolistResponseUpdate
+	err := json.Unmarshal(recorder.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusOK, result.Status)
+	assert.Equal(t, "update todolist successfully", result.Message)
 }
