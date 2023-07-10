@@ -165,7 +165,7 @@ func (handler *HandlerImpl) CreateHandlerTodolist(ctx *gin.Context) {
 		logrus.Error(err.Error())
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
 
-			Message: err.Error(),
+			Message: "invalid input validation",
 			Status:  http.StatusBadRequest,
 		})
 		return
@@ -176,7 +176,7 @@ func (handler *HandlerImpl) CreateHandlerTodolist(ctx *gin.Context) {
 		logrus.Error(errCreate.Error())
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
 
-			Message: errCreate.Error(),
+			Message: "internal server error",
 			Status:  http.StatusInternalServerError,
 		})
 		return
@@ -187,7 +187,7 @@ func (handler *HandlerImpl) CreateHandlerTodolist(ctx *gin.Context) {
 
 		Message: "create todolist successfully",
 		Status:  http.StatusCreated,
-		Data:    newList,
+		Data:    *newList,
 	})
 
 }
