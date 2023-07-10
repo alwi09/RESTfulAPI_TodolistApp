@@ -3,9 +3,9 @@ package dto
 import "todolist_gin_gorm/internal/model/entity"
 
 type TodolistResponseCreate struct {
-	Status  int         `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+	Status  int          `json:"status"`
+	Message string       `json:"message"`
+	Data    entity.Todos `json:"data"`
 }
 
 type TodolistResponseGetAll struct {
