@@ -32,6 +32,9 @@ func TestRunMock(t *testing.T) {
 	t.Run("TestGetTodolistByIdSuccess", TestGetTodolistByIdSuccess)
 	t.Run("TestGetTodolistByIdNotFound", TestGetTodolistByIdNotFound)
 	t.Run("TestGetTodolistByIdInternalServerError", TestGetTodolistByIdInternalServerError)
+	t.Run("TestDeleteTodolistSuccess", TestDeleteTodolistSuccess)
+	t.Run("TestDeleteTodolistNotFound", TestDeleteTodolistNotFound)
+	t.Run("TestDeleteTodolistInternalServerError", TestDeleteTodolistInternalServerError)
 
 }
 
@@ -398,6 +401,78 @@ func TestGetTodolistByIdInternalServerError(t *testing.T) {
 
 	var result dto.ErrorResponse
 	err = json.Unmarshal(responBody, &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusInternalServerError, result.Status)
+	assert.Equal(t, "internal server error", result.Message)
+}
+
+func TestDeleteTodolistSuccess(t *testing.T) {
+	repoMock := mocks.NewRepository(t)
+
+	handler := NewHandlerImpl(repoMock)
+
+	repoMock.On("Delete", int64(1)).Return(int64(1), nil)
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodDelete, "/delete_todolist/1", nil)
+
+	router := gin.Default()
+	router.DELETE("/delete_todolist/:todolistId", handler.DeleteHandlerTodolist)
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var result dto.TodolistResponseDelete
+	err := json.Unmarshal(recorder.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusOK, result.Status)
+	assert.Equal(t, "delete todolist successfully", result.Message)
+}
+
+func TestDeleteTodolistNotFound(t *testing.T) {
+	repoMock := mocks.NewRepository(t)
+
+	handler := NewHandlerImpl(repoMock)
+
+	repoMock.On("Delete", int64(1)).Return(int64(0), nil)
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodDelete, "/delete_todolist/1", nil)
+
+	router := gin.Default()
+	router.DELETE("/delete_todolist/:todolistId", handler.DeleteHandlerTodolist)
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+	var result dto.ErrorResponse
+	err := json.Unmarshal(recorder.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusNotFound, result.Status)
+	assert.Equal(t, "id not found", result.Message)
+}
+
+func TestDeleteTodolistInternalServerError(t *testing.T) {
+	repoMock := mocks.NewRepository(t)
+
+	handler := NewHandlerImpl(repoMock)
+
+	repoMock.On("Delete", int64(1)).Return(int64(0), errors.New("internal server error"))
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodDelete, "/delete_todolist/1", nil)
+
+	router := gin.Default()
+	router.DELETE("/delete_todolist/:todolistId", handler.DeleteHandlerTodolist)
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+
+	var result dto.TodolistResponseDelete
+	err := json.Unmarshal(recorder.Body.Bytes(), &result)
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusInternalServerError, result.Status)
