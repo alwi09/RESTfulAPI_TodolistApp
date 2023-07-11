@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"todolist_gin_gorm/internal/model/dto"
 	"todolist_gin_gorm/internal/model/entity"
@@ -197,6 +199,80 @@ func TestTableDrivenCreateTodolist(t *testing.T) {
 			}
 
 			assert.Equal(t, test.expectedStatus, recorder.Code)
+		})
+	}
+}
+
+func TestTableDrivenDeleteTodolist(t *testing.T) {
+	mockRepo := mocks.NewRepository(t)
+	handler := NewHandlerImpl(mockRepo)
+
+	gin.SetMode(gin.TestMode)
+
+	testCase := []struct {
+		name             string
+		todoID           int64
+		isFound          int64
+		expectedStatus   int
+		responseError    error
+		expectedResponse interface{}
+	}{
+		{
+			name:           "success",
+			todoID:         1,
+			isFound:        1,
+			expectedStatus: http.StatusOK,
+			responseError:  nil,
+			expectedResponse: dto.TodolistResponseDelete{
+				Status:  http.StatusOK,
+				Message: "delete todolist successfully",
+			},
+		},
+		{
+			name:           "not found",
+			todoID:         2,
+			isFound:        0,
+			expectedStatus: http.StatusNotFound,
+			responseError:  nil,
+			expectedResponse: dto.TodolistResponseDelete{
+				Status:  http.StatusNotFound,
+				Message: "id not found",
+			},
+		},
+		{
+			name:           "internal server error",
+			todoID:         3,
+			isFound:        0,
+			expectedStatus: http.StatusInternalServerError,
+			responseError:  errors.New("internal server error"),
+			expectedResponse: dto.TodolistResponseDelete{
+				Status:  http.StatusInternalServerError,
+				Message: "internal server error",
+			},
+		},
+	}
+
+	for _, test := range testCase {
+		t.Run(test.name, func(t *testing.T) {
+			mockRepo.On("Delete", test.todoID).Return(test.isFound, test.responseError)
+
+			recorder := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodDelete, "/delete_todolist/"+strconv.FormatInt(test.todoID, 10), nil)
+
+			router := gin.Default()
+			router.DELETE("/delete_todolist/:todolistId", handler.DeleteHandlerTodolist)
+			router.ServeHTTP(recorder, req)
+
+			assert.Equal(t, test.expectedStatus, recorder.Code)
+
+			var result dto.TodolistResponseDelete
+			err := json.Unmarshal(recorder.Body.Bytes(), &result)
+			if err != nil {
+				log.Print(err)
+			}
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expectedResponse, result)
 		})
 	}
 }
