@@ -276,3 +276,77 @@ func TestTableDrivenDeleteTodolist(t *testing.T) {
 		})
 	}
 }
+
+func TestTableDrivenGetTodolisyByID(t *testing.T) {
+
+	testCase := []struct {
+		name            string
+		inputID         int64
+		expectedStatus  int
+		expectedMessage string
+		expectedData    entity.Todos
+		mockError       error
+		mockResult      *entity.Todos
+	}{
+		{
+			name:            "success",
+			inputID:         1,
+			expectedStatus:  http.StatusOK,
+			expectedMessage: "get todolist by id successfully",
+			expectedData: entity.Todos{
+				Id:          1,
+				Title:       "sholat",
+				Description: "sholat tahajud",
+			},
+			mockError: nil,
+			mockResult: &entity.Todos{
+				Id:          1,
+				Title:       "sholat",
+				Description: "sholat tahajud",
+			},
+		},
+		{
+			name:            "not found",
+			inputID:         2,
+			expectedStatus:  http.StatusNotFound,
+			expectedMessage: "todolist by id not found",
+			expectedData:    entity.Todos{},
+			mockError:       nil,
+			mockResult:      nil,
+		},
+		{
+			name:            "internal server error",
+			inputID:         3,
+			expectedStatus:  http.StatusInternalServerError,
+			expectedMessage: "internal server error",
+			expectedData:    entity.Todos{},
+			mockError:       errors.New("internal server error"),
+			mockResult:      nil,
+		},
+	}
+
+	for _, test := range testCase {
+		t.Run(test.name, func(t *testing.T) {
+			mockRepo := mocks.NewRepository(t)
+			handler := NewHandlerImpl(mockRepo)
+
+			mockRepo.On("GetID", test.inputID).Return(test.mockResult, test.mockError)
+
+			recorder := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/find_by_id_todolist/%d", test.inputID), nil)
+
+			router := gin.Default()
+			router.GET("/find_by_id_todolist/:todolistId", handler.GetIDHandlerTodolist)
+			router.ServeHTTP(recorder, req)
+
+			responBody, err := io.ReadAll(recorder.Body)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expectedStatus, recorder.Code)
+
+			var result dto.TodolistResponseGetID
+			err = json.Unmarshal(responBody, &result)
+			require.NoError(t, err)
+		})
+	}
+}
