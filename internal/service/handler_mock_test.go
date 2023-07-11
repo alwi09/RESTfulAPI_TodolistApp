@@ -27,6 +27,9 @@ func TestRunMock(t *testing.T) {
 	t.Run("TestCreateTodolistInvalidValidation", TestCreateTodolistInvalidValidation)
 	t.Run("TestCreateTodolistInternalServerError", TestCreateTodolistInternalServerError)
 	t.Run("TestUpdateTodolistSuccess", TestUpdateTodolistSuccess)
+	t.Run("TestUpdateTodolistNotFound", TestUpdateTodolistNotFound)
+	t.Run("TestUpdateTodolistInternalServerError", TestUpdateTodolistInternalServerError)
+	t.Run("TestGetTodolistByIdSuccess", TestGetTodolistByIdSuccess)
 }
 
 func TestGetAllTodolistsSuccess(t *testing.T) {
@@ -231,7 +234,6 @@ func TestUpdateTodolistSuccess(t *testing.T) {
 		Status:      false,
 	}
 	requestBodyBytes, _ := json.Marshal(reqBody)
-	// require.NoError(t, err)
 
 	expextedTodo := entity.Todos{
 		Id:          1,
@@ -244,7 +246,6 @@ func TestUpdateTodolistSuccess(t *testing.T) {
 	repoMock.On("Update", int64(1), mock.Anything).Return(&expextedTodo, nil)
 
 	req, _ := http.NewRequest(http.MethodPut, "/update_todolist/1", bytes.NewBuffer(requestBodyBytes))
-	// require.NoError(t, err)
 	recorder := httptest.NewRecorder()
 
 	router := gin.Default()
@@ -257,4 +258,91 @@ func TestUpdateTodolistSuccess(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, result.Status)
 	assert.Equal(t, "update todolist successfully", result.Message)
+}
+
+func TestUpdateTodolistNotFound(t *testing.T) {
+	repoMock := mocks.NewRepository(t)
+
+	handler := NewHandlerImpl(repoMock)
+
+	reqBody := dto.UpdateTodolistRequest{
+		Title:       "new title",
+		Description: "new description",
+		Status:      false,
+	}
+	requestBodyBytes, _ := json.Marshal(reqBody)
+
+	repoMock.On("GetID", int64(1)).Return(nil, nil)
+
+	req, _ := http.NewRequest(http.MethodPut, "/update_todolist/1", bytes.NewBuffer(requestBodyBytes))
+	recorder := httptest.NewRecorder()
+
+	router := gin.Default()
+	router.PUT("/update_todolist/:todolistId", handler.UpdateHandlerTodolist)
+	router.ServeHTTP(recorder, req)
+
+	var result dto.ErrorResponse
+	err := json.Unmarshal(recorder.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusNotFound, result.Status)
+	assert.Equal(t, "todolist by id not found", result.Message)
+}
+
+func TestUpdateTodolistInternalServerError(t *testing.T) {
+	repoMock := mocks.NewRepository(t)
+
+	handler := NewHandlerImpl(repoMock)
+
+	repoMock.On("GetID", int64(1)).Return(&entity.Todos{}, nil)
+	repoMock.On("Update", int64(1), mock.Anything).Return(nil, errors.New("internal server error"))
+
+	reqBody := dto.UpdateTodolistRequest{
+		Title:       "new title",
+		Description: "new description",
+		Status:      false,
+	}
+
+	requestBodyBytes, _ := json.Marshal(reqBody)
+
+	req, _ := http.NewRequest(http.MethodPut, "/update_todolist/1", bytes.NewBuffer(requestBodyBytes))
+	recorder := httptest.NewRecorder()
+
+	router := gin.Default()
+	router.PUT("/update_todolist/:todolistId", handler.UpdateHandlerTodolist)
+	router.ServeHTTP(recorder, req)
+
+	var result dto.ErrorResponse
+	err := json.Unmarshal(recorder.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusInternalServerError, result.Status)
+	assert.Equal(t, "internal server error", result.Message)
+}
+
+func TestGetTodolistByIdSuccess(t *testing.T) {
+	repoMock := mocks.NewRepository(t)
+
+	handler := NewHandlerImpl(repoMock)
+
+	repoMock.On("GetID", int64(1)).Return(&entity.Todos{Id: 1, Title: "sholat", Description: "sholat tahajud"}, nil)
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/find_by_id_todolist/1", nil)
+
+	router := gin.Default()
+	router.GET("/find_by_id_todolist/:todolistId", handler.GetIDHandlerTodolist)
+	router.ServeHTTP(recorder, req)
+
+	responBody, err := io.ReadAll(recorder.Body)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var result dto.TodolistResponseGetID
+	err = json.Unmarshal(responBody, &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusOK, result.Status)
+	assert.Equal(t, "get todolist by id successfully", result.Message)
 }
