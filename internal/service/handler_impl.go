@@ -232,7 +232,7 @@ func (handler *HandlerImpl) GetIDHandlerTodolist(ctx *gin.Context) {
 		logrus.Errorf("failed when get todolist by id: %v", err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.ErrorResponse{
 
-			Message: err.Error(),
+			Message: "internal server error",
 			Status:  http.StatusInternalServerError,
 		})
 		return
