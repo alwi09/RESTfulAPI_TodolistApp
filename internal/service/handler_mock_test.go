@@ -30,6 +30,9 @@ func TestRunMock(t *testing.T) {
 	t.Run("TestUpdateTodolistNotFound", TestUpdateTodolistNotFound)
 	t.Run("TestUpdateTodolistInternalServerError", TestUpdateTodolistInternalServerError)
 	t.Run("TestGetTodolistByIdSuccess", TestGetTodolistByIdSuccess)
+	t.Run("TestGetTodolistByIdNotFound", TestGetTodolistByIdNotFound)
+	t.Run("TestGetTodolistByIdInternalServerError", TestGetTodolistByIdInternalServerError)
+
 }
 
 func TestGetAllTodolistsSuccess(t *testing.T) {
@@ -345,4 +348,58 @@ func TestGetTodolistByIdSuccess(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, result.Status)
 	assert.Equal(t, "get todolist by id successfully", result.Message)
+}
+
+func TestGetTodolistByIdNotFound(t *testing.T) {
+	repoMock := mocks.NewRepository(t)
+
+	handler := NewHandlerImpl(repoMock)
+
+	repoMock.On("GetID", int64(1)).Return(nil, nil)
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/find_by_id_todolist/1", nil)
+
+	router := gin.Default()
+	router.GET("/find_by_id_todolist/:todolistId", handler.GetIDHandlerTodolist)
+	router.ServeHTTP(recorder, req)
+
+	responBody, err := io.ReadAll(recorder.Body)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+	var result dto.ErrorResponse
+	err = json.Unmarshal(responBody, &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusNotFound, result.Status)
+	assert.Equal(t, "todolist by id not found", result.Message)
+}
+
+func TestGetTodolistByIdInternalServerError(t *testing.T) {
+	repoMock := mocks.NewRepository(t)
+
+	handler := NewHandlerImpl(repoMock)
+
+	repoMock.On("GetID", int64(1)).Return(nil, errors.New("internal server error"))
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/find_by_id_todolist/1", nil)
+
+	router := gin.Default()
+	router.GET("/find_by_id_todolist/:todolistId", handler.GetIDHandlerTodolist)
+	router.ServeHTTP(recorder, req)
+
+	responBody, err := io.ReadAll(recorder.Body)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+
+	var result dto.ErrorResponse
+	err = json.Unmarshal(responBody, &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusInternalServerError, result.Status)
+	assert.Equal(t, "internal server error", result.Message)
 }
