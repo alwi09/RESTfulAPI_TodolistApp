@@ -17,12 +17,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRunTableDriven(t *testing.T) {
 	t.Run("TestTableDrivenGetAllTodolist", TestTableDrivenGetAllTodolist)
 	t.Run("TestTableDrivenCreateTodolist", TestTableDrivenCreateTodolist)
+	t.Run("TestTableDrivenGetTodolisyByID", TestTableDrivenGetTodolisyByID)
+	t.Run("TestTableDrivenUpdateTodolist", TestTableDrivenUpdateTodolist)
 }
 
 func TestTableDrivenGetAllTodolist(t *testing.T) {
@@ -347,6 +350,111 @@ func TestTableDrivenGetTodolisyByID(t *testing.T) {
 			var result dto.TodolistResponseGetID
 			err = json.Unmarshal(responBody, &result)
 			require.NoError(t, err)
+		})
+	}
+}
+
+func TestTableDrivenUpdateTodolist(t *testing.T) {
+
+	mockRepo := mocks.NewRepository(t)
+
+	handler := NewHandlerImpl(mockRepo)
+
+	testCase := []struct {
+		name             string
+		id               int64
+		updateRequest    dto.UpdateTodolistRequest
+		mockBehavior     func()
+		expextedStatus   int
+		expectedResponse interface{}
+		expectedError    string
+	}{
+		{
+			name: "success",
+			id:   1,
+			updateRequest: dto.UpdateTodolistRequest{
+				Title:       "sholat",
+				Description: "sholat tahajud",
+			},
+			mockBehavior: func() {
+				expectedTodo := entity.Todos{
+					Id:          1,
+					Title:       "sholat",
+					Description: "sholat tahajud",
+					Status:      false,
+				}
+				mockRepo.On("GetID", int64(1)).Return(&entity.Todos{}, nil)
+				mockRepo.On("Update", int64(1), mock.Anything).Return(&expectedTodo, nil)
+			},
+			expextedStatus: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"message": "update todolist successfully",
+				"status":  http.StatusOK,
+				"data":    entity.Todos{},
+			},
+			expectedError: "",
+		},
+		{
+			name: "not found",
+			id:   2,
+			updateRequest: dto.UpdateTodolistRequest{
+				Title:       "sholat",
+				Description: "sholat tahajud",
+			},
+			mockBehavior: func() {
+				mockRepo.On("GetID", int64(2)).Return(nil, nil)
+			},
+			expextedStatus: http.StatusNotFound,
+			expectedResponse: dto.ErrorResponse{
+				Message: "todolist by id not found",
+				Status:  http.StatusNotFound,
+			},
+			expectedError: "todolist by id not found",
+		},
+		{
+			name: "internal server error",
+			id:   3,
+			updateRequest: dto.UpdateTodolistRequest{
+				Title:       "sholat",
+				Description: "sholat tahajud",
+			},
+			mockBehavior: func() {
+				mockRepo.On("GetID", int64(3)).Return(&entity.Todos{}, nil)
+				mockRepo.On("Update", int64(3), mock.Anything).Return(nil, errors.New("internal server error"))
+			},
+			expextedStatus: http.StatusInternalServerError,
+			expectedResponse: dto.ErrorResponse{
+				Message: "internal server error",
+				Status:  http.StatusInternalServerError,
+			},
+			expectedError: "internal server error",
+		},
+	}
+
+	for _, test := range testCase {
+		t.Run(test.name, func(t *testing.T) {
+			test.mockBehavior()
+
+			requestBodyBytes, _ := json.Marshal(test.updateRequest)
+
+			req, _ := http.NewRequest(http.MethodPut, fmt.Sprintf("/update_todolist/%d", test.id), bytes.NewBuffer(requestBodyBytes))
+			recorder := httptest.NewRecorder()
+
+			router := gin.Default()
+			router.PUT("/update_todolist/:todolistId", handler.UpdateHandlerTodolist)
+			router.ServeHTTP(recorder, req)
+
+			responseBody, err := io.ReadAll(recorder.Body)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expextedStatus, recorder.Code)
+
+			if test.expectedError != "" {
+				var errorResponse dto.ErrorResponse
+				err = json.Unmarshal(responseBody, &errorResponse)
+				require.NoError(t, err)
+				assert.Equal(t, test.expectedError, errorResponse.Message)
+			}
 		})
 	}
 }
