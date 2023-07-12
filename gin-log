@@ -14,5 +14,7 @@
 [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
 [GIN-debug] Listening and serving HTTP on :1234
-::1 - [12 Jul 23 11:47 WIB] POST /login 200 102.440556ms 
-[GIN] 2023/07/12 - 11:47:19 | 200 |  103.372006ms |             ::1 | POST     "/login"
+::1 - [12 Jul 23 22:12 WIB] POST /login 200 107.097711ms 
+[GIN] 2023/07/12 - 22:12:26 | 200 |  107.237095ms |             ::1 | POST     "/login"
+::1 - [12 Jul 23 22:14 WIB] POST /api/create_todolist 201 9.013454ms 
+[GIN] 2023/07/12 - 22:14:04 | 201 |     9.07901ms |             ::1 | POST     "/api/create_todolist"
