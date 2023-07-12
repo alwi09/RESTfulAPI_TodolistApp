@@ -26,6 +26,7 @@ func TestRunTableDriven(t *testing.T) {
 	t.Run("TestTableDrivenCreateTodolist", TestTableDrivenCreateTodolist)
 	t.Run("TestTableDrivenGetTodolisyByID", TestTableDrivenGetTodolisyByID)
 	t.Run("TestTableDrivenUpdateTodolist", TestTableDrivenUpdateTodolist)
+	t.Run("TestTableDrivenDeleteTodolist", TestTableDrivenDeleteTodolist)
 }
 
 func TestTableDrivenGetAllTodolist(t *testing.T) {
