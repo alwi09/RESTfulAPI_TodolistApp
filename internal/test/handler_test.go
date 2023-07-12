@@ -3,6 +3,7 @@ package test
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -47,15 +48,23 @@ func truncateTodolist(DB *gorm.DB) {
 	DB.Exec("TRUNCATE todos")
 }
 
+func TestRunHandler(t *testing.T) {
+	t.Run("TestCreateTodolistSuccess", TestCreateTodolistSuccess)
+	t.Run("TestCreateTodolistFailedBadRequest", TestCreateTodolistFailedBadRequest)
+}
+
 func TestCreateTodolistSuccess(t *testing.T) {
-	db, _ := setupTestDB()
+	db, err := setupTestDB()
+	if err != nil {
+		log.Print(err)
+	}
 
 	truncateTodolist(db)
 	router := setupRouter(db)
 
 	requestBody := strings.NewReader(`{"title": "sholat", "description": "sholat tahajud"}`)
 	request := httptest.NewRequest(http.MethodPost, "http://localhost:1234/api/create_todolist", requestBody)
-	request.Header.Add("Authorization", "")
+	request.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBvbmRva3Byb2dyYW1tZXJAZ21haWwuY29tIiwiZXhwIjoxNjg5MjYxMTQ2fQ.yNr_tCLqZIqXtW0PO3N1kDdwT3-IEWWKoCD6nCPUWY8")
 
 	recorder := httptest.NewRecorder()
 
@@ -74,8 +83,32 @@ func TestCreateTodolistSuccess(t *testing.T) {
 	assert.Equal(t, "sholat tahajud", responseBody["data"].(map[string]interface{})["description"])
 }
 
-func TestCreateTodolistFailed(t *testing.T) {
+func TestCreateTodolistFailedBadRequest(t *testing.T) {
+	db, err := setupTestDB()
+	if err != nil {
+		log.Print(err)
+	}
 
+	truncateTodolist(db)
+	router := setupRouter(db)
+
+	requestBody := strings.NewReader(`{"title": "", "description": ""}`)
+	request := httptest.NewRequest(http.MethodPost, "http://localhost:1234/api/create_todolist", requestBody)
+	request.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBvbmRva3Byb2dyYW1tZXJAZ21haWwuY29tIiwiZXhwIjoxNjg5MjYxMTQ2fQ.yNr_tCLqZIqXtW0PO3N1kDdwT3-IEWWKoCD6nCPUWY8")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	response := recorder.Result()
+	assert.Equal(t, http.StatusBadRequest, response.StatusCode)
+
+	body, _ := io.ReadAll(response.Body)
+	var responseBody map[string]interface{}
+	json.Unmarshal(body, &responseBody)
+
+	assert.Equal(t, http.StatusBadRequest, int(responseBody["status"].(float64)))
+	assert.Equal(t, "invalid input validation", responseBody["message"])
 }
 
 func TestUpdateTodolistSuccess(t *testing.T) {
