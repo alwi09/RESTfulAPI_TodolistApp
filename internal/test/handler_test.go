@@ -56,6 +56,10 @@ func TestRunHandler(t *testing.T) {
 	t.Run("TestUpdateTodolistFailedBadRequest", TestUpdateTodolistFailedBadRequest)
 	t.Run("TestGetTodolistByIDSuccess", TestGetTodolistByIDSuccess)
 	t.Run("TestGetTodolistByIDFailedNotFound", TestGetTodolistByIDFailedNotFound)
+	t.Run("TestDeleteTodolistSuccess", TestDeleteTodolistSuccess)
+	t.Run("TestDeleteTodolistFailedNotFound", TestDeleteTodolistFailedNotFound)
+	t.Run("TestListTodolistsSuccess", TestListTodolistsSuccess)
+	t.Run("TestUnauthorized", TestUnauthorized)
 }
 
 func TestCreateTodolistSuccess(t *testing.T) {
@@ -239,7 +243,6 @@ func TestGetTodolistByIDSuccess(t *testing.T) {
 	assert.Equal(t, todolist.Id, int64(responseBody["data"].(map[string]interface{})["id"].(float64)))
 	assert.Equal(t, todolist.Title, responseBody["data"].(map[string]interface{})["title"])
 	assert.Equal(t, todolist.Description, responseBody["data"].(map[string]interface{})["description"])
-
 }
 
 func TestGetTodolistByIDFailedNotFound(t *testing.T) {
@@ -275,17 +278,157 @@ func TestGetTodolistByIDFailedNotFound(t *testing.T) {
 }
 
 func TestDeleteTodolistSuccess(t *testing.T) {
+	db, err := setupTestDB()
+	if err != nil {
+		log.Print(err)
+	}
 
+	truncateTodolist(db)
+
+	tx := db.Begin()
+	todolistRepository := database.NewTodoRepository(db)
+	todolist, _ := todolistRepository.Create("sholat", "sholat tahajud")
+
+	tx.Commit()
+
+	router := setupRouter(db)
+
+	request := httptest.NewRequest(http.MethodDelete, "http://localhost:1234/api/delete_todolist/"+strconv.Itoa(int(todolist.Id)), nil)
+	request.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBvbmRva3Byb2dyYW1tZXJAZ21haWwuY29tIiwiZXhwIjoxNjg5MjYxMTQ2fQ.yNr_tCLqZIqXtW0PO3N1kDdwT3-IEWWKoCD6nCPUWY8")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	response := recorder.Result()
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+
+	body, _ := io.ReadAll(response.Body)
+	log.Println(string(body))
+
+	var responseBody map[string]interface{}
+	err = json.Unmarshal(body, &responseBody)
+	if err != nil {
+		t.Errorf("Failed to unmarshal response body: %v", err)
+	}
+
+	assert.Equal(t, http.StatusOK, int(responseBody["status"].(float64)))
+	assert.Equal(t, "delete todolist successfully", responseBody["message"])
 }
 
-func TestDeleteTodolistFailed(t *testing.T) {
+func TestDeleteTodolistFailedNotFound(t *testing.T) {
+	db, err := setupTestDB()
+	if err != nil {
+		log.Print(err)
+	}
 
+	truncateTodolist(db)
+	router := setupRouter(db)
+
+	request := httptest.NewRequest(http.MethodDelete, "http://localhost:1234/api/delete_todolist/404", nil)
+	request.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBvbmRva3Byb2dyYW1tZXJAZ21haWwuY29tIiwiZXhwIjoxNjg5MjYxMTQ2fQ.yNr_tCLqZIqXtW0PO3N1kDdwT3-IEWWKoCD6nCPUWY8")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	response := recorder.Result()
+	assert.Equal(t, http.StatusNotFound, response.StatusCode)
+
+	body, _ := io.ReadAll(response.Body)
+	log.Println(string(body))
+
+	var responseBody map[string]interface{}
+	err = json.Unmarshal(body, &responseBody)
+	if err != nil {
+		t.Errorf("Failed to unmarshal response body: %v", err)
+	}
+
+	assert.Equal(t, http.StatusNotFound, int(responseBody["status"].(float64)))
+	assert.Equal(t, "id not found", responseBody["message"])
 }
 
 func TestListTodolistsSuccess(t *testing.T) {
+	db, err := setupTestDB()
+	if err != nil {
+		log.Print(err)
+	}
 
+	truncateTodolist(db)
+
+	tx := db.Begin()
+	todolistRepository := database.NewTodoRepository(db)
+	todolist_satu, _ := todolistRepository.Create("sholat", "sholat tahajud")
+	todolist_dua, _ := todolistRepository.Create("qurban", "qurban sapi tahun depan amiinn")
+
+	tx.Commit()
+
+	router := setupRouter(db)
+
+	request := httptest.NewRequest(http.MethodGet, "http://localhost:1234/api/find_all_todolist", nil)
+	request.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBvbmRva3Byb2dyYW1tZXJAZ21haWwuY29tIiwiZXhwIjoxNjg5MjYxMTQ2fQ.yNr_tCLqZIqXtW0PO3N1kDdwT3-IEWWKoCD6nCPUWY8")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	response := recorder.Result()
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+
+	body, _ := io.ReadAll(response.Body)
+	log.Println(string(body))
+
+	var responseBody map[string]interface{}
+	err = json.Unmarshal(body, &responseBody)
+	if err != nil {
+		t.Errorf("Failed to unmarshal response body: %v", err)
+	}
+
+	assert.Equal(t, http.StatusOK, int(responseBody["status"].(float64)))
+	assert.Equal(t, "get all todolist successfully", responseBody["message"])
+
+	var todolists = responseBody["data"].([]interface{})
+
+	todolistResponse_satu := todolists[0].(map[string]interface{})
+	todolistResponse_dua := todolists[1].(map[string]interface{})
+
+	assert.Equal(t, todolist_satu.Id, int64(todolistResponse_satu["id"].(float64)))
+	assert.Equal(t, todolist_satu.Title, todolistResponse_satu["title"])
+	assert.Equal(t, todolist_satu.Description, todolistResponse_satu["description"])
+
+	assert.Equal(t, todolist_dua.Id, int64(todolistResponse_dua["id"].(float64)))
+	assert.Equal(t, todolist_dua.Title, todolistResponse_dua["title"])
+	assert.Equal(t, todolist_dua.Description, todolistResponse_dua["description"])
 }
 
 func TestUnauthorized(t *testing.T) {
+	db, err := setupTestDB()
+	if err != nil {
+		log.Print(err)
+	}
 
+	truncateTodolist(db)
+	router := setupRouter(db)
+
+	request := httptest.NewRequest(http.MethodGet, "http://localhost:1234/api/find_all_todolist", nil)
+	request.Header.Add("Authorization", "")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	response := recorder.Result()
+	assert.Equal(t, http.StatusUnauthorized, response.StatusCode)
+
+	body, _ := io.ReadAll(response.Body)
+	log.Println(string(body))
+
+	var responseBody map[string]interface{}
+	err = json.Unmarshal(body, &responseBody)
+	if err != nil {
+		t.Errorf("Failed to unmarshal response body: %v", err)
+	}
+
+	assert.Equal(t, http.StatusUnauthorized, int(responseBody["status"].(float64)))
+	assert.Equal(t, "Authorization token not provided", responseBody["message"])
 }
