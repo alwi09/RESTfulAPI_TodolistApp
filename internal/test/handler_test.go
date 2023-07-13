@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 	"todolist_gin_gorm/cmd/router"
@@ -51,6 +52,10 @@ func truncateTodolist(DB *gorm.DB) {
 func TestRunHandler(t *testing.T) {
 	t.Run("TestCreateTodolistSuccess", TestCreateTodolistSuccess)
 	t.Run("TestCreateTodolistFailedBadRequest", TestCreateTodolistFailedBadRequest)
+	t.Run("TestUpdateTodolistSuccess", TestUpdateTodolistSuccess)
+	t.Run("TestUpdateTodolistFailedBadRequest", TestUpdateTodolistFailedBadRequest)
+	t.Run("TestGetTodolistByIDSuccess", TestGetTodolistByIDSuccess)
+	t.Run("TestGetTodolistByIDFailedNotFound", TestGetTodolistByIDFailedNotFound)
 }
 
 func TestCreateTodolistSuccess(t *testing.T) {
@@ -112,19 +117,161 @@ func TestCreateTodolistFailedBadRequest(t *testing.T) {
 }
 
 func TestUpdateTodolistSuccess(t *testing.T) {
+	db, err := setupTestDB()
+	if err != nil {
+		log.Print(err)
+	}
 
+	truncateTodolist(db)
+
+	tx := db.Begin()
+	todolistRepository := database.NewTodoRepository(db)
+	todolist, _ := todolistRepository.Create("sholat", "sholat tahajud")
+
+	tx.Commit()
+
+	router := setupRouter(db)
+
+	requestBody := strings.NewReader(`{"title": "sholat", "description": "sholat dhuha", "status": true}`)
+	request := httptest.NewRequest(http.MethodPut, "http://localhost:1234/api/update_todolist/"+strconv.Itoa(int(todolist.Id)), requestBody)
+	request.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBvbmRva3Byb2dyYW1tZXJAZ21haWwuY29tIiwiZXhwIjoxNjg5MjYxMTQ2fQ.yNr_tCLqZIqXtW0PO3N1kDdwT3-IEWWKoCD6nCPUWY8")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	response := recorder.Result()
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+
+	body, _ := io.ReadAll(response.Body)
+	log.Println(string(body))
+
+	var responseBody map[string]interface{}
+	err = json.Unmarshal(body, &responseBody)
+	if err != nil {
+		t.Errorf("Failed to unmarshal response body: %v", err)
+	}
+
+	assert.Equal(t, http.StatusOK, int(responseBody["status"].(float64)))
+	assert.Equal(t, "update todolist successfully", responseBody["message"])
+	// assert.Equal(t, todolist.Id, int64(responseBody["data"].(map[string]interface{})["id"].(float64)))
+	assert.Equal(t, "sholat", responseBody["data"].(map[string]interface{})["title"])
+	assert.Equal(t, "sholat dhuha", responseBody["data"].(map[string]interface{})["description"])
 }
 
-func TestUpdateTodolistFailed(t *testing.T) {
+func TestUpdateTodolistFailedBadRequest(t *testing.T) {
+	db, err := setupTestDB()
+	if err != nil {
+		log.Print(err)
+	}
 
+	truncateTodolist(db)
+
+	tx := db.Begin()
+	todolistRepository := database.NewTodoRepository(db)
+	todolist, _ := todolistRepository.Create("sholat", "sholat tahajud")
+
+	tx.Commit()
+
+	router := setupRouter(db)
+
+	requestBody := strings.NewReader(`{"title": "", "description": "", "status": true}`)
+	request := httptest.NewRequest(http.MethodPut, "http://localhost:1234/api/update_todolist/"+strconv.Itoa(int(todolist.Id)), requestBody)
+	request.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBvbmRva3Byb2dyYW1tZXJAZ21haWwuY29tIiwiZXhwIjoxNjg5MjYxMTQ2fQ.yNr_tCLqZIqXtW0PO3N1kDdwT3-IEWWKoCD6nCPUWY8")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	response := recorder.Result()
+	assert.Equal(t, http.StatusBadRequest, response.StatusCode)
+
+	body, _ := io.ReadAll(response.Body)
+	log.Println(string(body))
+
+	var responseBody map[string]interface{}
+	err = json.Unmarshal(body, &responseBody)
+	if err != nil {
+		t.Errorf("Failed to unmarshal response body: %v", err)
+	}
+
+	assert.Equal(t, http.StatusBadRequest, int(responseBody["status"].(float64)))
+	assert.Equal(t, "bad request to update todo", responseBody["message"])
 }
 
 func TestGetTodolistByIDSuccess(t *testing.T) {
+	db, err := setupTestDB()
+	if err != nil {
+		log.Print(err)
+	}
+
+	truncateTodolist(db)
+
+	tx := db.Begin()
+	todolistRepository := database.NewTodoRepository(db)
+	todolist, _ := todolistRepository.Create("sholat", "sholat tahajud")
+
+	tx.Commit()
+
+	router := setupRouter(db)
+
+	request := httptest.NewRequest(http.MethodGet, "http://localhost:1234/api/find_by_id_todolist/"+strconv.Itoa(int(todolist.Id)), nil)
+	request.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBvbmRva3Byb2dyYW1tZXJAZ21haWwuY29tIiwiZXhwIjoxNjg5MjYxMTQ2fQ.yNr_tCLqZIqXtW0PO3N1kDdwT3-IEWWKoCD6nCPUWY8")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	response := recorder.Result()
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+
+	body, _ := io.ReadAll(response.Body)
+	log.Println(string(body))
+
+	var responseBody map[string]interface{}
+	err = json.Unmarshal(body, &responseBody)
+	if err != nil {
+		t.Errorf("Failed to unmarshal response body: %v", err)
+	}
+
+	assert.Equal(t, http.StatusOK, int(responseBody["status"].(float64)))
+	assert.Equal(t, "get todolist by id successfully", responseBody["message"])
+	assert.Equal(t, todolist.Id, int64(responseBody["data"].(map[string]interface{})["id"].(float64)))
+	assert.Equal(t, todolist.Title, responseBody["data"].(map[string]interface{})["title"])
+	assert.Equal(t, todolist.Description, responseBody["data"].(map[string]interface{})["description"])
 
 }
 
-func TestGetTodolistByIDFailed(t *testing.T) {
+func TestGetTodolistByIDFailedNotFound(t *testing.T) {
+	db, err := setupTestDB()
+	if err != nil {
+		log.Print(err)
+	}
 
+	truncateTodolist(db)
+	router := setupRouter(db)
+
+	request := httptest.NewRequest(http.MethodGet, "http://localhost:1234/api/find_by_id_todolist/404", nil)
+	request.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBvbmRva3Byb2dyYW1tZXJAZ21haWwuY29tIiwiZXhwIjoxNjg5MjYxMTQ2fQ.yNr_tCLqZIqXtW0PO3N1kDdwT3-IEWWKoCD6nCPUWY8")
+
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	response := recorder.Result()
+	assert.Equal(t, http.StatusNotFound, response.StatusCode)
+
+	body, _ := io.ReadAll(response.Body)
+	log.Println(string(body))
+
+	var responseBody map[string]interface{}
+	err = json.Unmarshal(body, &responseBody)
+	if err != nil {
+		t.Errorf("Failed to unmarshal response body: %v", err)
+	}
+
+	assert.Equal(t, http.StatusNotFound, int(responseBody["status"].(float64)))
+	assert.Equal(t, "todolist by id not found", responseBody["message"])
 }
 
 func TestDeleteTodolistSuccess(t *testing.T) {
