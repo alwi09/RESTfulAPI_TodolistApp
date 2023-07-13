@@ -265,7 +265,7 @@ func (handler *HandlerImpl) UpdateHandlerTodolist(ctx *gin.Context) {
 		logrus.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
 
-			Message: err.Error(),
+			Message: "bad request to update todo",
 			Status:  http.StatusBadRequest,
 		})
 		return
@@ -277,7 +277,7 @@ func (handler *HandlerImpl) UpdateHandlerTodolist(ctx *gin.Context) {
 		logrus.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.ErrorResponse{
 
-			Message: err.Error(),
+			Message: "bad request to update todo",
 			Status:  http.StatusBadRequest,
 		})
 		return
