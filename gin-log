@@ -14,11 +14,3 @@
 [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
 Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
 [GIN-debug] Listening and serving HTTP on :1234
-127.0.0.1 - [13 Jul 23 10:51 WIB] DELETE /api/delete_todolist/4 200 8.62804ms 
-[GIN] 2023/07/13 - 10:51:26 | 200 |    8.670217ms |       127.0.0.1 | DELETE   "/api/delete_todolist/4"
-[GIN-debug] redirecting request 301: /api/find_all_todolist --> /api/find_all_todolist
-127.0.0.1 - [13 Jul 23 11:09 WIB] GET /api/find_all_todolist 200 1.996753ms 
-[GIN] 2023/07/13 - 11:09:45 | 200 |    2.176643ms |       127.0.0.1 | GET      "/api/find_all_todolist"
-[GIN-debug] redirecting request 301: /api/find_all_todolist --> /api/find_all_todolist
-127.0.0.1 - [13 Jul 23 11:18 WIB] GET /api/find_all_todolist 200 747.214µs 
-[GIN] 2023/07/13 - 11:18:11 | 200 |     805.127µs |       127.0.0.1 | GET      "/api/find_all_todolist"
